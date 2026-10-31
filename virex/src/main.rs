@@ -3,6 +3,7 @@ use std::{
     io::{Write, stdin, stdout},
 };
 
+mod colors;
 mod config;
 mod help;
 mod info;
@@ -19,24 +20,18 @@ fn main() {
     while let Some(arg) = iter.next() {
         match arg.as_str() {
             "install" => {
-                if config::exists() && config::has_source() {
-                    // install function here..
-                } else {
-                    println!("config.toml is not setup correctly. Create new with 'virex config'.")
+                if !errors_exists() {
+                    // install function here...
                 }
             }
             "update" => {
-                if config::exists() && config::has_source() {
+                if !errors_exists() {
                     // update function here...
-                } else {
-                    println!("config.toml is not setup correctly. Create new with 'virex config'.")
                 }
             }
             "uninstall" => {
-                if config::exists() && config::has_source() {
+                if !errors_exists() {
                     // uninstall function here...
-                } else {
-                    println!("config.toml is not setup correctly. Create new with 'virex config'.")
                 }
             }
             "help" => {
@@ -45,7 +40,7 @@ fn main() {
             "config" => {
                 if !config::exists() {
                     let choice = &get_input("Config doesn't exist. Create new config? [y/n] ");
-                    if choice == "y" || choice == "yes" || choice == "ye" {
+                    if choice.starts_with('y') {
                         match config::create() {
                             Ok(_) => {} // Config created without any error
                             Err(e) => println!("{}", e),
@@ -54,7 +49,7 @@ fn main() {
                 } else if !config::has_source() {
                     let choice =
                         &get_input("Config doesn't have any source. Add new source? [y/n] ");
-                    if choice == "y" || choice == "yes" || choice == "ye" {
+                    if choice.starts_with('y') {
                         let name = &get_input("Enter source name: ");
                         let url = &get_input("Enter source url: ");
                         match config::add_source(name, url) {
@@ -64,20 +59,14 @@ fn main() {
                     }
                 } else {
                     let choice = &get_input("Add or remove source? [a/r] ");
-                    if choice == "a" || choice == "ad" || choice == "add" {
+                    if choice.starts_with('a') {
                         let name = &get_input("Enter source name: ");
                         let url = &get_input("Enter source url: ");
                         match config::add_source(name, url) {
                             Ok(_) => {} // Source added without any error
                             Err(e) => println!("{}", e),
                         }
-                    } else if choice == "r"
-                        || choice == "re"
-                        || choice == "rem"
-                        || choice == "remo"
-                        || choice == "remov"
-                        || choice == "remove"
-                    {
+                    } else if choice.starts_with('r') {
                         let name = &get_input("Enter source name: ");
                         match config::remove_source(name) {
                             Ok(_) => {} // Source removed without any error
@@ -94,7 +83,7 @@ fn main() {
                 println!("{} - {}\nv{} by {}.", name, description, version, authors);
             }
             unknown => {
-                println!("Unknown command: {}.", unknown);
+                colors::yellow("Unknown command", unknown);
             }
         }
     }
@@ -106,4 +95,16 @@ fn get_input(prompt: &str) -> String {
     let mut input: String = String::new();
     stdin().read_line(&mut input).expect("Failed to readline");
     input.trim().to_lowercase()
+}
+
+fn errors_exists() -> bool {
+    if !config::exists() || !config::has_source() {
+        colors::red(
+            "config.toml is not setup correctly.",
+            "Create new with 'virex config'.",
+        );
+        true
+    } else {
+        false
+    }
 }
