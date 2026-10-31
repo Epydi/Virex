@@ -19,24 +19,24 @@ fn main() {
     while let Some(arg) = iter.next() {
         match arg.as_str() {
             "install" => {
-                if config::exists() {
+                if config::exists() && config::has_source() {
                     // install function here..
                 } else {
-                    println!("config.toml doesn't exist. Create new with 'virex config'.")
+                    println!("config.toml is not setup correctly. Create new with 'virex config'.")
                 }
             }
             "update" => {
-                if config::exists() {
+                if config::exists() && config::has_source() {
                     // update function here...
                 } else {
-                    println!("config.toml doesn't exist. Create new with 'virex config'.")
+                    println!("config.toml is not setup correctly. Create new with 'virex config'.")
                 }
             }
             "uninstall" => {
-                if config::exists() {
+                if config::exists() && config::has_source() {
                     // uninstall function here...
                 } else {
-                    println!("config.toml doesn't exist. Create new with 'virex config'.")
+                    println!("config.toml is not setup correctly. Create new with 'virex config'.")
                 }
             }
             "help" => {
@@ -51,13 +51,36 @@ fn main() {
                             Err(e) => println!("{}", e),
                         }
                     }
-                } else {
-                    let choice = &get_input("Edit config? [y/n] ");
+                } else if !config::has_source() {
+                    let choice =
+                        &get_input("Config doesn't have any source. Add new source? [y/n] ");
                     if choice == "y" || choice == "yes" || choice == "ye" {
                         let name = &get_input("Enter source name: ");
                         let url = &get_input("Enter source url: ");
-                        match config::edit(name, url) {
-                            Ok(_) => {} // Config edited without any error
+                        match config::add_source(name, url) {
+                            Ok(_) => {} // Source added without any error
+                            Err(e) => println!("{}", e),
+                        }
+                    }
+                } else {
+                    let choice = &get_input("Add or remove source? [a/r] ");
+                    if choice == "a" || choice == "ad" || choice == "add" {
+                        let name = &get_input("Enter source name: ");
+                        let url = &get_input("Enter source url: ");
+                        match config::add_source(name, url) {
+                            Ok(_) => {} // Source added without any error
+                            Err(e) => println!("{}", e),
+                        }
+                    } else if choice == "r"
+                        || choice == "re"
+                        || choice == "rem"
+                        || choice == "remo"
+                        || choice == "remov"
+                        || choice == "remove"
+                    {
+                        let name = &get_input("Enter source name: ");
+                        match config::remove_source(name) {
+                            Ok(_) => {} // Source removed without any error
                             Err(e) => println!("{}", e),
                         }
                     }
