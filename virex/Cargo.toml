@@ -3,5 +3,9 @@ name = "virex"
 version = "0.1.0"
 edition = "2024"
 authors = ["Arshaninov Dmitri <damirarsaninov9@gmail.com>", "Komendant Kostiantyn <pureraaven@gmail.com>"]
+description = "Fast, secure and blazing package manager for Virexon"
+readme = "../README.md"
+homepage = "https://github.com/Epydi/Virex"
+repository = "https://github.com/Epydi/Virex"
 
 [dependencies]
